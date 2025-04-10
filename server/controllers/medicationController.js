@@ -1,50 +1,62 @@
 // server/controllers/medicationController.js
 const db = require("../models");
 const Medication = db.medications;
-const Op = db.Sequelize.Op;
+const { Op } = db.Sequelize;  // 올바른 Op 객체 가져오기
 
-// 의약품 검색 (다양한 조건)
+// 의약품 검색 (이름으로만 검색)
 exports.search = async (req, res) => {
   try {
     const {
       keyword,
-      name,
       shape,
       color,
       formulation,
       divisionLine,
-      ingredients,
       page = 1,
-      limit = 10
+      limit = 10,
+      sort = 'koreanName',
+      order = 'ASC'
     } = req.query;
 
     // 페이지네이션 계산
     const offset = (page - 1) * limit;
     const whereCondition = {};
 
-    // 검색 조건 추가 (키워드 검색)
+    // 키워드가 있는 경우 약품 이름으로만 검색
     if (keyword) {
-      whereCondition[Op.or] = [
-        { '약품_한글명': { [Op.like]: `%${keyword}%` } },
-        { '약품_영문명': { [Op.like]: `%${keyword}%` } },
-        { '성분정보': { [Op.like]: `%${keyword}%` } },
-        { '효능효과': { [Op.like]: `%${keyword}%` } }
-      ];
+      whereCondition['korean_name'] = { [Op.like]: `%${keyword}%` };
     }
 
-    // 특정 필드 검색 조건 추가
-    if (name) whereCondition['약품_한글명'] = { [Op.like]: `%${name}%` };
-    if (shape) whereCondition['모양'] = shape;
-    if (color) whereCondition['색깔'] = color;
-    if (formulation) whereCondition['제형'] = formulation;
-    if (divisionLine) whereCondition['분할선'] = divisionLine;
-    if (ingredients) whereCondition['성분정보'] = { [Op.like]: `%${ingredients}%` };
+    // 식별 검색 조건 추가
+    if (shape) whereCondition['shape'] = shape;
+    if (color) whereCondition['color'] = color;
+    if (formulation) whereCondition['formulation'] = formulation;
+    if (divisionLine) whereCondition['division_line'] = divisionLine;
+
+    // 정렬 옵션 설정
+    let orderField;
+    switch (sort) {
+      case 'koreanName':
+        orderField = 'korean_name';
+        break;
+      case 'company':
+        orderField = 'company';
+        break;
+      case 'classification':
+        orderField = 'classification';
+        break;
+      default:
+        orderField = 'korean_name';
+    }
+
+    const orderOption = [[orderField, order]];
 
     // 데이터베이스 쿼리 실행
     const { count, rows } = await Medication.findAndCountAll({
       where: whereCondition,
       limit: parseInt(limit),
-      offset: offset
+      offset: offset,
+      order: orderOption
     });
 
     // 응답 데이터 구성
@@ -87,12 +99,37 @@ exports.findOne = async (req, res) => {
 // 의약품 목록 조회 (필터링 및 페이지네이션)
 exports.findAll = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { 
+      page = 1, 
+      limit = 10, 
+      sort = 'koreanName', 
+      order = 'ASC' 
+    } = req.query;
+    
     const offset = (page - 1) * limit;
+    
+    // 정렬 옵션 설정
+    let orderField;
+    switch (sort) {
+      case 'koreanName':
+        orderField = 'korean_name';
+        break;
+      case 'company':
+        orderField = 'company';
+        break;
+      case 'classification':
+        orderField = 'classification';
+        break;
+      default:
+        orderField = 'korean_name';
+    }
+
+    const orderOption = [[orderField, order]];
     
     const { count, rows } = await Medication.findAndCountAll({
       limit: parseInt(limit),
-      offset: offset
+      offset: offset,
+      order: orderOption
     });
     
     res.json({

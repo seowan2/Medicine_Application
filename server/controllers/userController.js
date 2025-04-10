@@ -111,12 +111,22 @@ exports.addMedication = async (req, res) => {
     const userId = req.userId; // 인증 미들웨어에서 설정
     const { medicationId, notes, intakeTime, prescription, startDate, endDate } = req.body;
     
+    console.log("의약품 추가 요청:", { userId, medicationId, notes, intakeTime });
+    
     // 의약품 존재 확인
     const medication = await Medication.findByPk(medicationId);
     
     if (!medication) {
       return res.status(404).json({
         message: "해당 ID의 의약품을 찾을 수 없습니다."
+      });
+    }
+    
+    // 사용자 확인
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({
+        message: "사용자를 찾을 수 없습니다."
       });
     }
     
@@ -127,24 +137,26 @@ exports.addMedication = async (req, res) => {
         medicationId
       },
       defaults: {
-        notes,
-        intakeTime,
-        prescription,
-        startDate,
-        endDate
+        notes: notes || '',
+        intakeTime: intakeTime || '',
+        prescription: prescription || '',
+        startDate: startDate || null,
+        endDate: endDate || null
       }
     });
     
     // 이미 존재하는 경우 업데이트
     if (!created) {
       await userMedication.update({
-        notes,
-        intakeTime,
-        prescription,
-        startDate,
-        endDate
+        notes: notes || userMedication.notes,
+        intakeTime: intakeTime || userMedication.intakeTime,
+        prescription: prescription || userMedication.prescription,
+        startDate: startDate || userMedication.startDate,
+        endDate: endDate || userMedication.endDate
       });
     }
+    
+    console.log("의약품 추가 완료:", created ? "새로 추가됨" : "업데이트됨");
     
     res.status(created ? 201 : 200).json({
       message: created ? "의약품이 성공적으로 추가되었습니다." : "의약품 정보가 업데이트되었습니다.",
@@ -153,7 +165,8 @@ exports.addMedication = async (req, res) => {
   } catch (error) {
     console.error("의약품 추가 오류:", error);
     res.status(500).json({
-      message: "의약품 추가 중 오류가 발생했습니다."
+      message: "의약품 추가 중 오류가 발생했습니다.",
+      error: error.message
     });
   }
 };
