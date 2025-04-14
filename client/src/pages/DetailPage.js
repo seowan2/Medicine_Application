@@ -133,15 +133,19 @@ const DetailPage = () => {
         <div className="md:flex">
           {/* 의약품 이미지 */}
           <div className="md:w-1/3 bg-gray-100 flex items-center justify-center p-6">
-            <img
-              src={medication.imageUrl || '/assets/pill-placeholder.png'}
-              alt={medication.koreanName}
-              className="max-h-64 object-contain"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = '/assets/pill-placeholder.png';
-              }}
-            />
+            {medication.imageUrl ? (
+              <img
+                src={medication.imageUrl}
+                alt={medication.koreanName}
+                className="max-h-64 object-contain"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.parentNode.innerHTML = '<div class="text-gray-500 text-center">이미지 정보없음</div>';
+                }}
+              />
+            ) : (
+              <div className="text-gray-500 text-center">이미지 정보없음</div>
+            )}
           </div>
           
           {/* 의약품 기본 정보 */}
@@ -252,7 +256,15 @@ const DetailPage = () => {
           </button>
           {expandedSections.ingredients && (
             <div className="px-6 py-4">
-              <p className="whitespace-pre-line">{medication.ingredients || '정보가 없습니다.'}</p>
+              {medication.ingredients ? (
+                <div className="whitespace-pre-line text-gray-700 leading-relaxed">
+                  {medication.ingredients.split('\n').map((paragraph, idx) => (
+                    <p key={idx} className="mb-4">{paragraph}</p>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">정보가 없습니다.</p>
+              )}
             </div>
           )}
         </div>
@@ -275,7 +287,15 @@ const DetailPage = () => {
           </button>
           {expandedSections.effects && (
             <div className="px-6 py-4">
-              <p className="whitespace-pre-line">{medication.effects || '정보가 없습니다.'}</p>
+              {medication.effects ? (
+                <div className="whitespace-pre-line text-gray-700 leading-relaxed">
+                  {medication.effects.split('\n').map((paragraph, idx) => (
+                    <p key={idx} className="mb-4">{paragraph}</p>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">정보가 없습니다.</p>
+              )}
             </div>
           )}
         </div>
@@ -298,7 +318,15 @@ const DetailPage = () => {
           </button>
           {expandedSections.dosage && (
             <div className="px-6 py-4">
-              <p className="whitespace-pre-line">{medication.dosage || '정보가 없습니다.'}</p>
+              {medication.dosage ? (
+                <div className="whitespace-pre-line text-gray-700 leading-relaxed">
+                  {medication.dosage.split('\n').map((paragraph, idx) => (
+                    <p key={idx} className="mb-4">{paragraph}</p>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">정보가 없습니다.</p>
+              )}
             </div>
           )}
         </div>
@@ -322,7 +350,15 @@ const DetailPage = () => {
           {expandedSections.precautions && (
             <div className="px-6 py-4">
               <div className="max-h-96 overflow-y-auto">
-                <p className="whitespace-pre-line">{medication.precautions || '정보가 없습니다.'}</p>
+                {medication.precautions ? (
+                  <div className="whitespace-pre-line text-gray-700 leading-relaxed">
+                    {medication.precautions.split('\n').map((paragraph, idx) => (
+                      <p key={idx} className="mb-4">{paragraph}</p>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 italic">정보가 없습니다.</p>
+                )}
               </div>
             </div>
           )}
@@ -347,7 +383,15 @@ const DetailPage = () => {
           {expandedSections.expertPrecautions && (
             <div className="px-6 py-4">
               <div className="max-h-96 overflow-y-auto">
-                <p className="whitespace-pre-line">{medication.expertPrecautions || '정보가 없습니다.'}</p>
+                {medication.expertPrecautions ? (
+                  <div className="whitespace-pre-line text-gray-700 leading-relaxed">
+                    {medication.expertPrecautions.split('\n').map((paragraph, idx) => (
+                      <p key={idx} className="mb-4">{paragraph}</p>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 italic">정보가 없습니다.</p>
+                )}
               </div>
             </div>
           )}

@@ -16,26 +16,27 @@ const MedicationCard = ({ medication }) => {
     imageUrl
   } = medication;
 
-  // 이미지가 없는 경우 대체 이미지 URL
-  const fallbackImageUrl = '/assets/pill-placeholder.png';
-
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:scale-102 border border-gray-200">
       <div className="h-48 overflow-hidden bg-gray-100 flex items-center justify-center p-4">
-        <img
-          src={imageUrl || fallbackImageUrl}
-          alt={koreanName}
-          className="object-contain h-full w-full"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = fallbackImageUrl;
-          }}
-        />
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={koreanName}
+            className="object-contain h-full w-full"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.parentNode.innerHTML = '<div class="text-gray-500 text-center">정보없음</div>';
+            }}
+          />
+        ) : (
+          <div className="text-gray-500 text-center">정보없음</div>
+        )}
       </div>
       
       <div className="p-4">
         <h3 className="text-lg font-semibold text-gray-800 mb-1 truncate">{koreanName}</h3>
-        <p className="text-sm text-gray-600 mb-2 truncate">{englishName}</p>
+        <p className="text-sm text-gray-600 mb-2 truncate">{englishName || '-'}</p>
         
         <div className="text-xs text-gray-500 space-y-1 mb-3">
           {classification && <p>분류: {classification}</p>}

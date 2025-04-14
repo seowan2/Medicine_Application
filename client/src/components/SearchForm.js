@@ -1,8 +1,8 @@
 // client/src/components/SearchForm.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-// 제형 옵션 정의
-const formulationOptions = [
+// 모양 옵션 정의
+const shapeOptions = [
   { value: '', label: '전체' },
   { value: '원형', label: '원형' },
   { value: '타원형', label: '타원형' },
@@ -30,7 +30,7 @@ const colorOptions = [
 ];
 
 // 제형 옵션 정의
-const shapeOptions = [
+const formulationOptions = [
   { value: '', label: '전체' },
   { value: '정제류', label: '정제류' },
   { value: '경질캡슐', label: '경질캡슐' },
@@ -46,16 +46,39 @@ const divisionLineOptions = [
   { value: '기타', label: '기타' }
 ];
 
-const SearchForm = ({ onSearch }) => {
-  const [searchParams, setSearchParams] = useState({
+// 모양 아이콘 객체
+const shapeIcons = {
+  '전체': '전체',
+  '원형': '⭕',
+  '타원형': '⬭',
+  '반원형': '◗',
+  '삼각형': '△',
+  '사각형': '□',
+  '마름모형': '◇',
+  '장방형': '▭',
+  '오각형': '⬟',
+  '육각형': '⬢'
+};
+
+const SearchForm = ({ onSearch, initialParams }) => {
+  // 기본 검색 파라미터
+  const defaultParams = {
     keyword: '',
     shape: '',
     color: '',
     formulation: '',
     divisionLine: ''
-  });
+  };
 
+  const [searchParams, setSearchParams] = useState(initialParams || defaultParams);
   const [advanced, setAdvanced] = useState(false);
+
+  // initialParams가 변경되면 상태 업데이트
+  useEffect(() => {
+    if (initialParams) {
+      setSearchParams(initialParams);
+    }
+  }, [initialParams]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,35 +91,41 @@ const SearchForm = ({ onSearch }) => {
   };
 
   const handleReset = () => {
-    setSearchParams({
-      keyword: '',
-      shape: '',
-      color: '',
-      formulation: '',
-      divisionLine: ''
-    });
+    setSearchParams(defaultParams);
+  };
+
+  // 모양 선택 핸들러
+  const handleShapeSelect = (value) => {
+    setSearchParams(prev => ({ ...prev, shape: value }));
+  };
+
+  // 색상 선택 핸들러
+  const handleColorSelect = (value) => {
+    setSearchParams(prev => ({ ...prev, color: value }));
   };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
       <form onSubmit={handleSubmit}>
         {/* 기본 검색창 */}
-        <div className="flex mb-4">
-          <input
-            type="text"
-            name="keyword"
-            value={searchParams.keyword}
-            onChange={handleChange}
-            placeholder="약 이름 또는 성분 등으로 검색해 보세요."
-            className="flex-1 p-3 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
-          <button
-            type="submit"
-            className="bg-green-600 text-white px-6 py-3 rounded-r-md hover:bg-green-700 transition"
-          >
-            검색
-          </button>
-        </div>
+        {!advanced && (
+          <div className="flex mb-4">
+            <input
+              type="text"
+              name="keyword"
+              value={searchParams.keyword}
+              onChange={handleChange}
+              placeholder="약 이름으로 검색해 보세요."
+              className="flex-1 p-3 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <button
+              type="submit"
+              className="bg-green-600 text-white px-6 py-3 rounded-r-md hover:bg-green-700 transition"
+            >
+              검색
+            </button>
+          </div>
+        )}
 
         {/* 고급 검색 토글 버튼 */}
         <div className="flex justify-between items-center mb-4">
@@ -124,40 +153,40 @@ const SearchForm = ({ onSearch }) => {
 
         {/* 고급 검색 옵션 */}
         {advanced && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* 모양 필터 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">모양</label>
-              <div className="grid grid-cols-5 gap-2">
-                {formulationOptions.map((option) => (
+          <div>
+            {/* 모양 */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">모양</label>
+              <div className="grid grid-cols-5 gap-4">
+                {shapeOptions.map((option) => (
                   <div key={option.value} className="flex flex-col items-center">
                     <button
                       type="button"
-                      onClick={() => setSearchParams({ ...searchParams, formulation: option.value })}
-                      className={`w-12 h-12 rounded-full border ${
-                        searchParams.formulation === option.value
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-gray-300'
+                      onClick={() => handleShapeSelect(option.value)}
+                      className={`w-14 h-14 rounded-full border ${
+                        searchParams.shape === option.value
+                          ? 'border-green-500 bg-green-50 text-green-600'
+                          : 'border-gray-300 text-gray-700'
                       } flex items-center justify-center mb-1`}
                     >
-                      {option.label === '전체' ? '전체' : ''}
+                      {shapeIcons[option.label] || option.label[0]}
                     </button>
-                    <span className="text-xs">{option.label}</span>
+                    <span className="text-xs text-gray-600">{option.label}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* 색상 필터 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">색상</label>
-              <div className="grid grid-cols-5 gap-2">
+            {/* 색상 */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">색상</label>
+              <div className="grid grid-cols-5 gap-4">
                 {colorOptions.map((option) => (
                   <div key={option.value} className="flex flex-col items-center">
                     <button
                       type="button"
-                      onClick={() => setSearchParams({ ...searchParams, color: option.value })}
-                      className={`w-10 h-10 rounded-full ${
+                      onClick={() => handleColorSelect(option.value)}
+                      className={`w-12 h-12 rounded-full ${
                         option.value === '하양' ? 'bg-white' :
                         option.value === '노랑' ? 'bg-yellow-400' :
                         option.value === '주황' ? 'bg-orange-500' :
@@ -176,55 +205,56 @@ const SearchForm = ({ onSearch }) => {
                     >
                       {option.label === '전체' && '전체'}
                     </button>
-                    <span className="text-xs">{option.label}</span>
+                    <span className="text-xs text-gray-600">{option.label}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* 제형 필터 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">제형</label>
-              <select
-                name="shape"
-                value={searchParams.shape}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                {shapeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* 제형과 분할선 (드롭다운 메뉴) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {/* 제형 드롭다운 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">제형</label>
+                <select
+                  name="formulation"
+                  value={searchParams.formulation}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800"
+                >
+                  {formulationOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            {/* 분할선 필터 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">분할선</label>
-              <select
-                name="divisionLine"
-                value={searchParams.divisionLine}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                {divisionLineOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              {/* 분할선 드롭다운 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">분할선</label>
+                <select
+                  name="divisionLine"
+                  value={searchParams.divisionLine}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800"
+                >
+                  {divisionLineOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* 검색 버튼 */}
-            <div className="col-span-1 md:col-span-2 lg:col-span-4 mt-4">
-              <button
-                type="submit"
-                className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition"
-              >
-                식별 검색하기
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition"
+            >
+              식별 검색하기
+            </button>
           </div>
         )}
       </form>

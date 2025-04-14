@@ -19,6 +19,10 @@ const SearchPage = () => {
   const [itemsPerPage, setItemsPerPage] = useState(parseInt(queryParams.get('limit')) || 10);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  
+  // 정렬 옵션 상태
+  const [sortOption, setSortOption] = useState(queryParams.get('sort') || 'koreanName');
+  const [sortOrder, setSortOrder] = useState(queryParams.get('order') || 'ASC');
 
   // 검색 파라미터 초기화
   const [searchParams, setSearchParams] = useState({
@@ -39,7 +43,9 @@ const SearchPage = () => {
         // 모든 쿼리 파라미터 수집
         const params = {
           page: currentPage,
-          limit: itemsPerPage
+          limit: itemsPerPage,
+          sort: sortOption,
+          order: sortOrder
         };
         
         // 검색 파라미터 추가
@@ -67,6 +73,8 @@ const SearchPage = () => {
     const queryParams = new URLSearchParams();
     queryParams.append('page', currentPage);
     queryParams.append('limit', itemsPerPage);
+    queryParams.append('sort', sortOption);
+    queryParams.append('order', sortOrder);
     
     Object.entries(searchParams).forEach(([key, value]) => {
       if (value) {
@@ -75,7 +83,7 @@ const SearchPage = () => {
     });
     
     navigate(`/search?${queryParams.toString()}`, { replace: true });
-  }, [currentPage, itemsPerPage, searchParams, navigate]);
+  }, [currentPage, itemsPerPage, searchParams, sortOption, sortOrder, navigate]);
 
   // 검색 핸들러
   const handleSearch = (newSearchParams) => {
@@ -93,6 +101,18 @@ const SearchPage = () => {
   const handleItemsPerPageChange = (newItemsPerPage) => {
     setItemsPerPage(newItemsPerPage);
     setCurrentPage(1); // 첫 페이지로 이동
+  };
+
+  // 정렬 변경 핸들러
+  const handleSortChange = (e) => {
+    setSortOption(e.target.value);
+    setCurrentPage(1); // 정렬 변경 시 첫 페이지로
+  };
+
+  // 정렬 방향 변경 핸들러
+  const handleOrderChange = (e) => {
+    setSortOrder(e.target.value);
+    setCurrentPage(1);
   };
 
   return (
@@ -128,13 +148,26 @@ const SearchPage = () => {
               총 <span className="font-semibold">{totalItems}</span>개의 결과
             </p>
             
-            {/* 정렬 옵션 (향후 구현) */}
+            {/* 정렬 옵션 */}
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-600">정렬:</span>
-              <select className="border border-gray-300 rounded p-1 text-sm">
-                <option value="relevance">관련도순</option>
-                <option value="name_asc">이름 오름차순</option>
-                <option value="name_desc">이름 내림차순</option>
+              <select
+                value={sortOption}
+                onChange={handleSortChange}
+                className="border border-gray-300 rounded p-1 text-sm"
+              >
+                <option value="koreanName">이름</option>
+                <option value="company">제조사</option>
+                <option value="classification">분류</option>
+              </select>
+              
+              <select
+                value={sortOrder}
+                onChange={handleOrderChange}
+                className="border border-gray-300 rounded p-1 text-sm"
+              >
+                <option value="ASC">오름차순</option>
+                <option value="DESC">내림차순</option>
               </select>
             </div>
           </div>

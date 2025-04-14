@@ -8,10 +8,20 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { currentUser } = useContext(AuthContext);
 
+  // 검색 핸들러는 SearchPage와 동일하게 구현
   const handleSearch = (searchParams) => {
     // 검색 파라미터를 URL 쿼리 파라미터로 변환
     const queryParams = new URLSearchParams();
     
+    // 정렬 옵션 기본값 추가
+    queryParams.append('sort', 'koreanName');
+    queryParams.append('order', 'ASC');
+    
+    // 페이지네이션 기본값 추가
+    queryParams.append('page', 1);
+    queryParams.append('limit', 10);
+    
+    // 검색 파라미터 추가
     Object.entries(searchParams).forEach(([key, value]) => {
       if (value) {
         queryParams.append(key, value);
@@ -19,6 +29,15 @@ const HomePage = () => {
     });
     
     navigate(`/search?${queryParams.toString()}`);
+  };
+
+  // 초기 검색 파라미터 - 검색 페이지와 동일하게 설정
+  const initialSearchParams = {
+    keyword: '',
+    shape: '',
+    color: '',
+    formulation: '',
+    divisionLine: ''
   };
 
   return (
@@ -37,7 +56,8 @@ const HomePage = () => {
           </p>
 
           <div className="w-full max-w-3xl">
-            <SearchForm onSearch={handleSearch} />
+            {/* 검색폼에 초기 검색 파라미터 전달 */}
+            <SearchForm onSearch={handleSearch} initialParams={initialSearchParams} />
           </div>
 
           {/* 주요 기능 바로가기 */}
